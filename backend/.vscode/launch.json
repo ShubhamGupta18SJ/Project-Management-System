@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug TypeScript Node",
+      "type": "node",                  // classic Node.js debugger
+      "request": "launch",
+      "runtimeArgs": ["-r", "ts-node/register"],
+      "args": ["src/server.ts"],       // main entry file
+      "cwd": "${workspaceFolder}/backend",
+      "console": "integratedTerminal",
+      "restart": true,
+      "sourceMaps": true
+    }
+  ]
+}

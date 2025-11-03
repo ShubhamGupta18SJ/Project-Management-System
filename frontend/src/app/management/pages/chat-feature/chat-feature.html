@@ -1,0 +1,10 @@
+<div class="whatsapp-container row">
+  <div class="col-5">
+    <app-chat-list [contacts]="chatService.contacts()" [contactCount]="chatService.contactCount()"
+      (selectContact)="onSelectContact($event)">
+    </app-chat-list>
+  </div>
+  <div class="col-7">
+    <app-chat-window></app-chat-window>
+  </div>
+</div>

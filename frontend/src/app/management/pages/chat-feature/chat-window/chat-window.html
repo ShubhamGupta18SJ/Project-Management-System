@@ -1,0 +1,89 @@
+<div class="chat-window">
+  @if (selectedContact) {
+    <mat-toolbar color="primary" class="chat-header">
+      <button mat-icon-button >
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+
+      <img
+        matListItemAvatar
+        class="avatar"
+        [src]="selectedContact.avatar || 'assets/default-avatar.png'"
+        alt="avatar"
+      />
+      <span class="contact-name">{{ selectedContact.name }}</span>
+
+      <span class="spacer"></span>
+
+      <button mat-icon-button><mat-icon>videocam</mat-icon></button>
+      <button mat-icon-button><mat-icon>call</mat-icon></button>
+      <button mat-icon-button><mat-icon>more_vert</mat-icon></button>
+    </mat-toolbar>
+
+    <div class="chat-messages" #messageContainer>
+      @for (group of groupedMessages; track group.date) {
+        <div class="date-divider">{{ group.date }}</div>
+
+        @for (message of group.messages; track message.id) {
+          <div
+            [class]="
+              message.sanderUniqueCode === currentUser.uniqueCode
+                ? 'message sent'
+                : 'message received'
+            "
+          >
+            <mat-card class="message-bubble">
+              <mat-card-content>
+                {{ message.text }}
+
+                <span class="message-time">
+                  {{ message.time }}
+                  @if (message.sanderUniqueCode === currentUser.uniqueCode) {
+                    @if (message.messageStatus == 1) {
+                      <mat-icon class="uncheckmark">done</mat-icon>
+                    }
+                    @else if (message.messageStatus == 2) {
+                      <mat-icon class="uncheckmark">done_all</mat-icon>
+                    }
+                    @else if (message.messageStatus == 3) {
+                      <mat-icon class="checkmark">done_all</mat-icon>
+                    }
+                    @else {
+                      <mat-icon class="uncheckmark">history</mat-icon>
+                    }
+                  }
+                </span>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        }
+      }
+    </div>
+
+    <mat-toolbar class="chat-input">
+      <button mat-icon-button><mat-icon>emoji_emotions</mat-icon></button>
+
+      <textarea
+        matInput
+        placeholder="Message"
+        [(ngModel)]="messageText"
+        (keyup.enter)="sendMessage()"
+        rows="2"
+      ></textarea>
+
+      <button mat-icon-button color="primary" (click)="sendMessage()">
+        <mat-icon>send</mat-icon>
+      </button>
+
+      <button mat-icon-button><mat-icon>attach_file</mat-icon></button>
+      <button mat-icon-button><mat-icon>photo_camera</mat-icon></button>
+    </mat-toolbar>
+  }
+  @else {
+    <div class="no-chat">
+      <mat-icon class="large-icon">chat</mat-icon>
+      <h2>ChatApp</h2>
+      <p>Select a contact to start chatting</p>
+    </div>
+  }
+</div>
