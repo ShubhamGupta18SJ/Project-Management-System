@@ -73,25 +73,7 @@ export const addMessage = async (req: Request, res: Response) => {
   }
 };
 
-// export const getChatByDate = async (req: Request, res: Response) => {
-//   try {
-//     const { sender, receiver, date } = req.params;
-//     const users = [sender, receiver].sort();
-//     const chatId = `${users[0]}_${users[1]}`;
 
-//     const chat = await Chat.findOne({ chatId });
-//     if (!chat) return res.json({ success: true, data: { date, messages: [] } });
-
-//     const chatDate = chat.chats.find((c: any) => c.date === date);
-//     if (!chatDate) return res.json({ success: true, data: { date, messages: [] } });
-
-//     // return all messages for that date between them
-//     return res.json({ success: true, data: { date, messages: chatDate.messages } });
-//   } catch (err) {
-//     console.error(err);
-//     return res.status(500).json({ success: false, message: "Server Error", err });
-//   }
-// };
 export const getChatByDate = async (req: Request, res: Response) => {
   try {
     const { sender, receiver, date } = req.params;

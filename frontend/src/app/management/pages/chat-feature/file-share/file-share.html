@@ -1,0 +1,59 @@
+<div class="file-share-overlay">
+  <div class="file-share-card">
+    <div class="header">
+      <span>File Preview</span>
+      <button mat-icon-button (click)="close.emit()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    @if (selectedFiles.length > 0) {
+      <div class="preview-area">
+        <div class="preview-grid">
+          @for (url of previewUrls; track $index; let i = $index) {
+            <div class="file-box">
+              @if (selectedFiles[i].type.startsWith('image/')) {
+                <img [src]="url" class="preview-img" alt="preview" />
+              } @else {
+                <div class="file-icon">
+                  <mat-icon>insert_drive_file</mat-icon>
+                  <span class="file-name">{{ selectedFiles[i].name }}</span>
+                </div>
+              }
+
+              <button mat-icon-button color="warn" class="remove-btn" (click)="removeFile(i)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          }
+
+          <!-- Add More Button -->
+          <div class="file-box add-more">
+            <input type="file" hidden #fileInput multiple (change)="onFileSelect($event)" />
+            <button mat-icon-button color="primary" (click)="openFileInput(fileInput)">
+              <mat-icon>add</mat-icon>
+            </button>
+            <span>Add More</span>
+          </div>
+        </div>
+
+        <mat-form-field appearance="outline" class="caption-box">
+          <mat-label>Add a caption...</mat-label>
+          <textarea matInput [(ngModel)]="caption" rows="2"></textarea>
+        </mat-form-field>
+
+        <div class="actions">
+          <button mat-stroked-button color="warn" (click)="clearAll()">Clear All</button>
+          <button mat-flat-button color="primary" (click)="sendFiles()">Send</button>
+        </div>
+      </div>
+    } @else {
+      <div class="select-file">
+        <input type="file" hidden #fileInput multiple (change)="onFileSelect($event)" />
+        <button mat-flat-button color="primary" (click)="openFileInput(fileInput)">
+          <mat-icon>add</mat-icon> Select Files
+        </button>
+      </div>
+    }
+  </div>
+</div>

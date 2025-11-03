@@ -2966,6 +2966,11 @@ email-addresses@^3.0.1:
   resolved "https://registry.npmjs.org/email-addresses/-/email-addresses-3.1.0.tgz"
   integrity sha512-k0/r7GrWVL32kZlGwfPNgB2Y/mMXVTq/decgLczm/j34whdaspNrZO8CnXPf1laaHxI6ptUlsnAxN+UAPw+fzg==
 
+emoji-picker-element@^1.27.0:
+  version "1.27.0"
+  resolved "https://registry.npmjs.org/emoji-picker-element/-/emoji-picker-element-1.27.0.tgz"
+  integrity sha512-CeN9g5/kq41+BfYPDpAbE2ejZRHbs1faFDmU9+E9wGA4JWLkok9zo1hwcAFnUhV4lPR3ZuLHiJxNG1mpjoF4TQ==
+
 emoji-regex@^10.3.0:
   version "10.5.0"
   resolved "https://registry.npmjs.org/emoji-regex/-/emoji-regex-10.5.0.tgz"
