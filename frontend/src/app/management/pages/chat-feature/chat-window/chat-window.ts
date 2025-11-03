@@ -38,10 +38,16 @@ export class ChatWindow implements OnInit {
   }
 
   get messages() {
-    return this.chatService.messages();
+    return this.chatService.messages;
   }
+
+
   ngOnInit() {
 
+    effect(() => {
+      const messages = this.chatService.messages();
+      console.log('📩 Messages updated:ChatWindow', messages);
+    });
     effect(() => {
       const selected = this.chatService.selectedContact();
       if (selected) {
@@ -55,7 +61,8 @@ export class ChatWindow implements OnInit {
   sendMessage() {
     const text = this.messageText().trim();
     if (!text) return;
-    this.chatService.sendMessage(text);  //  service handles socket + saving
+    //  service handles socket + saving
+    this.chatService.sendMessage(text);
     this.messageText.set('');
 
     setTimeout(() => this.scrollToBottom(), 50);
@@ -70,26 +77,24 @@ export class ChatWindow implements OnInit {
 
   get filteredMessages() {
     const selected = this.chatService.selectedContact();
-    // console.log(this.chatService.selectedContact(), "this.chatService.selectedContact()");
     if (!selected) return [];
 
     const currentUser = this.currentUser.uniqueCode;
-    // this.scrollToBottom();
-    return this.messages.filter(m =>
-      (m.sanderUniqueCode === currentUser && m.reciverUniqueCode === selected.sanderUniqueCode) ||
-      (m.sanderUniqueCode === selected.sanderUniqueCode && m.reciverUniqueCode === currentUser)
+    return this.messages().filter(
+      (m) =>
+        (m.sanderUniqueCode === currentUser &&
+          m.reciverUniqueCode === selected.sanderUniqueCode) ||
+        (m.sanderUniqueCode === selected.sanderUniqueCode &&
+          m.reciverUniqueCode === currentUser)
     );
   }
 
-  // date vice message
   get groupedMessages() {
     const grouped: { date: string; messages: Message[] }[] = [];
     const map = new Map<string, Message[]>();
 
     for (const msg of this.filteredMessages) {
-      if (!map.has(msg.date)) {
-        map.set(msg.date, []);
-      }
+      if (!map.has(msg.date)) map.set(msg.date, []);
       map.get(msg.date)?.push(msg);
     }
 
@@ -97,50 +102,53 @@ export class ChatWindow implements OnInit {
       grouped.push({ date, messages });
     }
 
-    // Sort by date ascending
-    grouped.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    grouped.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
     return grouped;
   }
 
   getDisplayDate(date: string): string {
-    const today = new Date().toISOString().split("T")[0];
-    if (date === today) return "Today";
-
-    const options: Intl.DateTimeFormatOptions = { day: "2-digit", month: "short", year: "numeric" };
-    return new Date(date).toLocaleDateString("en-US", options);
+    const today = new Date().toISOString().split('T')[0];
+    if (date === today) return 'Today';
+    return new Date(date).toLocaleDateString('en-US', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
   }
 
   onScroll(event: Event) {
     const element = event.target as HTMLElement;
-    console.log(element,"oldestDate");
+    console.log(element, "oldestDate");
 
     if (element.scrollTop === 0) {
       const oldestDate = this.groupedMessages[0]?.date;
-      
+
       if (oldestDate) {
         this.loadOlderMessages(oldestDate);
       }
     }
   }
 
- loadOlderMessages(oldestDate: string) {
-  const container = document.querySelector('.chat-messages');
-  const prevHeight = container?.scrollHeight ?? 0;
+  loadOlderMessages(oldestDate: string) {
+    const container = document.querySelector('.chat-messages');
+    const prevHeight = container?.scrollHeight ?? 0;
 
-  const contact = this.chatService.selectedContact();
-  if (!contact) return;
+    const contact = this.chatService.selectedContact();
+    if (!contact) return;
 
-  const previousDate = this.getPreviousDate(oldestDate);
-  if (!previousDate) return;
+    const previousDate = this.getPreviousDate(oldestDate);
+    if (!previousDate) return;
 
-  this.chatService.loadMessages(contact, previousDate).then(() => {
-    setTimeout(() => {
-      if (container) {
-        container.scrollTop = container.scrollHeight - prevHeight;
-      }
-    }, 100);
-  });
-}
+    this.chatService.loadMessages(contact, previousDate).then(() => {
+      setTimeout(() => {
+        if (container) {
+          container.scrollTop = container.scrollHeight - prevHeight;
+        }
+      }, 100);
+    });
+  }
 
 
   getPreviousDate(dateStr: string): string | null {

@@ -149,43 +149,26 @@ export class ChatService {
     this.messagesSignal.update(messages => [...messages, newMessage]);
   }
 
+  private receiveMessage(msg: any) {
+    if (msg._doc) msg = msg._doc;
 
-  // private receiveMessage(msg: Message) {
-  //   const storedUser = localStorage.getItem('user');
-  //   if (!storedUser) return;
-
-  //   const currentUser = JSON.parse(storedUser);
-
-  //   //  Ignore message if this user is the sender
-  //   if (msg.sanderUniqueCode === currentUser.uniqueCode) {
-  //     console.log("⏩ Ignored self message from server");
-  //     return;
-  //   }
-
-  //   const newMsg: Message = {
-  //     id: this.messagesSignal().length + 1,
-  //     text: msg.text,
-  //     time: msg.time || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-  //     isSent: false,
-  //     isRead: true,
-  //     sanderUniqueCode: msg.sanderUniqueCode,
-  //     reciverUniqueCode: msg.reciverUniqueCode,
-  //     messageStatus: msg.messageStatus ?? 1
-  //   };
-
-  //   this.messagesSignal.update(messages => [...messages, newMsg]);
-  // }
-  private receiveMessage(msg: Message) {
     const storedUser = localStorage.getItem('user');
     if (!storedUser) return;
 
     const currentUser = JSON.parse(storedUser);
 
-    // Ignore if this message is from current user (already displayed)
     if (msg.sanderUniqueCode === currentUser.uniqueCode) {
-      console.log("⏩ Ignored self message from server");
+      console.log("⏩ Ignored self message from server (already in UI)");
       return;
     }
+
+    // const alreadyExists = this.messagesSignal().some(
+    //   m => m.tempId === msg.tempId || (msg.id && m.id === msg.id)
+    // );
+    // if (alreadyExists) {
+    //   console.log("⚠️ Skipped duplicate message:", msg.text);
+    //   return;
+    // }
 
     const newMsg: Message = {
       id: this.messagesSignal().length + 1,
@@ -197,21 +180,26 @@ export class ChatService {
       sanderUniqueCode: msg.sanderUniqueCode,
       reciverUniqueCode: msg.reciverUniqueCode,
       date: msg.date || new Date().toISOString().split("T")[0],
+      tempId: msg.tempId
     };
 
-    //  Add message instantly to chat window
     this.messagesSignal.update(messages => [...messages, newMsg]);
-
-    //  If receiver is currently viewing this chat, mark message as read immediately
+    console.log("✅ messagesSignal updated:", this.messagesSignal());
+    
     const selected = this.selectedContact();
     if (selected && selected.sanderUniqueCode === msg.sanderUniqueCode) {
       this.markMessagesAsRead(msg.sanderUniqueCode);
     }
   }
 
-  markMessagesAsRead(senderCode: string) {
-    console.log("ss", senderCode);
 
+
+  markMessagesAsRead(senderCode: string) {
+    const storedUser = localStorage.getItem('user');
+    if (!storedUser) return;
+    const currentUser = JSON.parse(storedUser);
+
+    // Update UI instantly
     const updated = this.messagesSignal().map(msg => {
       if (msg.sanderUniqueCode === senderCode) {
         return { ...msg, isRead: true, messageStatus: 3 };
@@ -220,22 +208,15 @@ export class ChatService {
     });
     this.messagesSignal.set(updated);
 
-    this.socket.emit("readMessages", { senderCode });
+    // ✅ Send both sender & receiver codes to backend
+    this.socket.emit("readMessages", {
+      senderCode,
+      receiverCode: currentUser.uniqueCode,
+    });
   }
 
-  // selectContact(contact: Contact) {
-  //   this.selectedContactSignal.set(contact);
-
-  //   if (this.messagesSignal().length === 0) {
-  //     const today = new Date().toISOString().split("T")[0];
-  //     this.loadMessages(contact, today);
-  //   }
-
-  //   this.markMessagesAsRead(contact.reciverUniqueCode);
-  // }
   selectContact(contact: Contact) {
     this.selectedContactSignal.set(contact);
-
     // Always load fresh messages for this contact
     const today = new Date().toISOString().split("T")[0];
     this.loadMessages(contact, today);

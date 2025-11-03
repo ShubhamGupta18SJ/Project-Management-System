@@ -53,24 +53,24 @@ export const addMessageSocket = async (msg: any) => {
     throw err;
   }
 };
+
 export const updateMessagesToSeen = async (data: any) => {
-  // data: { senderCode, receiverCode, date?, messageStatus? }
   try {
     const users = [data.senderCode, data.receiverCode].sort();
     const chatId = `${users[0]}_${users[1]}`;
+
     const chat = await Chat.findOne({ chatId });
     if (!chat) return;
 
     for (const day of chat.chats) {
-      if (data.date && day.date !== data.date) continue;
-
       for (const msg of day.messages) {
-        if (msg.sanderUniqueCode === data.senderCode && msg.reciverUniqueCode === data.receiverCode) {
-          // 💡 If you want to mark "delivered" (2) or "seen" (3)
-          if (data.messageStatus) {
-            msg.messageStatus = data.messageStatus;
-            msg.isRead = data.messageStatus === 3; // only true for seen
-          }
+        if (
+          msg.sanderUniqueCode === data.senderCode &&
+          msg.reciverUniqueCode === data.receiverCode &&
+          !msg.isRead
+        ) {
+          msg.isRead = true;
+          msg.messageStatus = 3;
         }
       }
     }
@@ -83,37 +83,3 @@ export const updateMessagesToSeen = async (data: any) => {
   }
 };
 
-
-// messageSocket.service.ts
-
-
-// let io: Server | null = null;
-
-// export const initMessageSocket = (server: any) => {
-//   io = new Server(server, {
-//     cors: {
-//       origin: "*",
-//     },
-//   });
-
-//   console.log("✅ Socket.IO Initialized");
-
-//   io.on("connection", (socket) => {
-//     console.log("🔗 User connected", socket.id);
-
-//     socket.on("joinRoom", (uniqueCode: string) => {
-//       socket.join(uniqueCode);
-//       console.log(`📢 User ${uniqueCode} joined room`);
-//     });
-
-//     socket.on("disconnect", () => {
-//       console.log("❌ User disconnected", socket.id);
-//     });
-//   });
-// };
-
-// export const emitNewMessage = (receiverCode: string, message: any) => {
-//   if (!io) return console.error("Socket not initialized");
-
-//   io.to(receiverCode).emit("newMessage", message);
-// };

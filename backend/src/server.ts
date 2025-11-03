@@ -37,7 +37,7 @@
 //   socket.on("register-user", (uniqueCode: string) => {
 //     if (!uniqueCode) return;
 //     onlineUsers.set(uniqueCode, socket.id);
-//     console.log(`✅ Registered ${uniqueCode} -> ${socket.id}`);
+//     console.log(` Registered ${uniqueCode} -> ${socket.id}`);
 //   });
 
 //   // Receive message from client via socket
@@ -131,7 +131,7 @@ const server = http.createServer(app);
 
 const io = new SocketIOServer(server, {
   cors: {
-    origin: "http://localhost:4200", // ✅ safer than "*"
+    origin: "http://localhost:4200", //  safer than "*"
     methods: ["GET", "POST"],
   },
 });
@@ -143,21 +143,21 @@ const onlineUsers = new Map<string, string>();
 app.set("io", io);
 app.set("onlineUsers", onlineUsers);
 
-// ✅ Normal REST APIs
+//  Normal REST APIs
 app.use("/api/messages", messageRoutes);
 
 // 🧠 SOCKET.IO LOGIC
 io.on("connection", (socket) => {
   console.log("🟢 User connected:", socket.id);
 
-  // ✅ Register user (client sends uniqueCode)
+  //  Register user (client sends uniqueCode)
   socket.on("register-user", (uniqueCode: string) => {
     if (!uniqueCode) return;
     onlineUsers.set(uniqueCode, socket.id);
-    console.log(`✅ Registered ${uniqueCode} -> ${socket.id}`);
+    console.log(` Registered ${uniqueCode} -> ${socket.id}`);
   });
 
-  // ✅ Handle incoming message
+  //  Handle incoming message
   socket.on("message", async (msg: any) => {
     try {
       // Save message to DB
@@ -198,12 +198,11 @@ io.on("connection", (socket) => {
     }
   });
 
-  // ✅ Handle “read messages” event
+  //  Handle “read messages” event
   socket.on("readMessages", async (data: any) => {
     try {
       // Update DB
       await updateMessagesToSeen(data);
-
       // Inform sender (if online)
       const senderSocket = onlineUsers.get(data.senderCode);
       if (senderSocket) {
@@ -221,7 +220,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  // ✅ Handle disconnect
+  //  Handle disconnect
   socket.on("disconnect", () => {
     console.log("🔴 User disconnected:", socket.id);
     // Remove from online users
