@@ -1,0 +1,42 @@
+.chat-window {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #e5ddd5;
+  height: 85vh;
+}
+
+.chat-header {
+  background: #004979 !important;
+  gap: 10px;
+  color: white;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.contact-name {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.chat-header {
+  .mat-mdc-icon-button .mdc-button__label,
+  .mat-mdc-icon-button .mat-icon {
+    z-index: 1;
+    position: relative;
+    color: white;
+  }
+}

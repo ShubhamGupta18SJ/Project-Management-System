@@ -8,6 +8,71 @@ import { User } from "../models/user.model";
  * body: { sanderUniqueCode, reciverUniqueCode, text, time, date, tempId(optional) }
  * This API saves message and emits socket event (if io available on app)
  */
+// export const addMessage = async (req: Request, res: Response) => {
+//   try {
+//     const {
+//       sanderUniqueCode,
+//       reciverUniqueCode,
+//       text,
+//       time,
+//       date,
+//       tempId,
+//     } = req.body;
+
+//     // Build message object
+//     const msg = {
+//       text,
+//       time: time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+//       date: date || new Date().toISOString().split("T")[0],
+//       sanderUniqueCode,
+//       reciverUniqueCode,
+//       tempId: tempId || null,
+//       messageStatus: 1,
+//       isSent: true,
+//       isRead: false,
+//     };
+
+//     // Use the same save helper as socket service to keep behaviour consistent
+//     // const { addMessageSocket } = await import("../service/messageSocket.service.js");
+//     const savedMsg = await addMessageSocket(msg);
+
+//     // Emit to receiver if socket available
+//     const io = req.app.get("io");
+//     const onlineUsers: Map<string, string> = req.app.get("onlineUsers");
+
+//     if (io && onlineUsers) {
+//       const receiverSocketId = onlineUsers.get(reciverUniqueCode);
+//       const senderSocketId = onlineUsers.get(sanderUniqueCode);
+
+//       if (receiverSocketId) {
+//         io.to(receiverSocketId).emit("message", { ...savedMsg, messageStatus: 2 });
+//         // notify sender about delivered
+//         if (senderSocketId) {
+//           io.to(senderSocketId).emit("messageStatus", {
+//             tempId,
+//             messageId: savedMsg._id,
+//             messageStatus: 2,
+//           });
+//         }
+//       } else {
+//         // receiver offline -> notify sender of sent (1)
+//         if (senderSocketId) {
+//           io.to(senderSocketId).emit("messageStatus", {
+//             tempId,
+//             messageId: savedMsg._id,
+//             messageStatus: 1,
+//           });
+//         }
+//       }
+//     }
+
+//     return res.json({ success: true, message: "Message saved", data: savedMsg });
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(500).json({ success: false, message: "Server Error", err });
+//   }
+// };
+
 export const addMessage = async (req: Request, res: Response) => {
   try {
     const {
@@ -16,13 +81,14 @@ export const addMessage = async (req: Request, res: Response) => {
       text,
       time,
       date,
+      replyTo, 
       tempId,
     } = req.body;
 
     // Build message object
     const msg = {
       text,
-      time: time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      time: time || new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       date: date || new Date().toISOString().split("T")[0],
       sanderUniqueCode,
       reciverUniqueCode,
@@ -30,13 +96,13 @@ export const addMessage = async (req: Request, res: Response) => {
       messageStatus: 1,
       isSent: true,
       isRead: false,
+      replyTo: replyTo || null, 
+      replyToText: replyTo?.text || null,
     };
 
-    // Use the same save helper as socket service to keep behaviour consistent
-    // const { addMessageSocket } = await import("../service/messageSocket.service.js");
+    // Save using socket helper (so behavior stays same)
     const savedMsg = await addMessageSocket(msg);
 
-    // Emit to receiver if socket available
     const io = req.app.get("io");
     const onlineUsers: Map<string, string> = req.app.get("onlineUsers");
 
@@ -46,7 +112,6 @@ export const addMessage = async (req: Request, res: Response) => {
 
       if (receiverSocketId) {
         io.to(receiverSocketId).emit("message", { ...savedMsg, messageStatus: 2 });
-        // notify sender about delivered
         if (senderSocketId) {
           io.to(senderSocketId).emit("messageStatus", {
             tempId,
@@ -54,15 +119,12 @@ export const addMessage = async (req: Request, res: Response) => {
             messageStatus: 2,
           });
         }
-      } else {
-        // receiver offline -> notify sender of sent (1)
-        if (senderSocketId) {
-          io.to(senderSocketId).emit("messageStatus", {
-            tempId,
-            messageId: savedMsg._id,
-            messageStatus: 1,
-          });
-        }
+      } else if (senderSocketId) {
+        io.to(senderSocketId).emit("messageStatus", {
+          tempId,
+          messageId: savedMsg._id,
+          messageStatus: 1,
+        });
       }
     }
 

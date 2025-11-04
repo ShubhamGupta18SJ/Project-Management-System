@@ -14,6 +14,21 @@ export interface Contact {
   unReadMessages?: string;
 }
 
+// export interface Message {
+//   id: number;
+//   sanderUniqueCode: string;
+//   reciverUniqueCode: string;
+//   text: string;
+//   time: string;
+//   isSent: boolean;
+//   isRead?: boolean;
+//   messageStatus: number;
+//   date?: any;
+//   replyTo?: any;
+//   replyToText?: any;
+//   replyToUserName?: any;
+//   tempId?: string
+// }
 export interface Message {
   id: number;
   sanderUniqueCode: string;
@@ -24,8 +39,19 @@ export interface Message {
   isRead?: boolean;
   messageStatus: number;
   date?: any;
-  tempId?: string
+  replyTo?: {
+    _id?: string;
+    text?: string;
+    sanderUniqueCode?: string;
+    reciverUniqueCode?: string;
+    date?: string;
+    time?: string;
+  } | null;
+  replyToText?: string | null;
+  replyToUserName?: string | null;
+  tempId?: string;
 }
+
 
 @Injectable({
   providedIn: 'root'
@@ -122,75 +148,133 @@ export class ChatService {
 
 
   //  Send message to server
-  sendMessage(text: string) {
-    if (!this.storedUser) return;
+  // sendMessage(text: string) {
+  //   if (!this.storedUser) return;
 
-    const currentUser = JSON.parse(this.storedUser);
-    const selected = this.selectedContact();
+  //   const currentUser = JSON.parse(this.storedUser);
+  //   const selected = this.selectedContact();
 
-    if (!selected) return;
+  //   if (!selected) return;
 
-    const newMessage: Message = {
-      id: this.messagesSignal().length + 1,
-      text,
-      time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      isSent: true,
-      isRead: false,
-      messageStatus: 1,
-      sanderUniqueCode: currentUser.uniqueCode,
-      reciverUniqueCode: selected.reciverUniqueCode,
-      date: new Date().toISOString().split("T")[0],
-      tempId: `${new Date().toISOString().split("T")[0]}_${currentUser.uniqueCode}_${selected.reciverUniqueCode}`
-    };
+  //   const newMessage: Message = {
+  //     id: this.messagesSignal().length + 1,
+  //     text,
+  //     time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+  //     isSent: true,
+  //     isRead: false,
+  //     messageStatus: 1,
+  //     sanderUniqueCode: currentUser.uniqueCode,
+  //     reciverUniqueCode: selected.reciverUniqueCode,
+  //     date: new Date().toISOString().split("T")[0],
+  //     tempId: `${new Date().toISOString()}_${currentUser.uniqueCode}_${selected.reciverUniqueCode}`
+  //   };
 
-    //  Emit to backend
-    this.socket.emit('message', newMessage);
-    //  Update UI instantly
-    this.messagesSignal.update(messages => [...messages, newMessage]);
-  }
+  //   //  Emit to backend
+  //   this.socket.emit('message', newMessage);
+  //   //  Update UI instantly
+  //   this.messagesSignal.update(messages => [...messages, newMessage]);
+  // }
+sendMessage(payload: any) {
+  if (!this.storedUser) return;
 
-  private receiveMessage(msg: any) {
-    if (msg._doc) msg = msg._doc;
+  const currentUser = JSON.parse(this.storedUser);
+  const selected = this.selectedContact();
+  if (!selected) return;
 
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) return;
+  const newMessage: Message = {
+    id: this.messagesSignal().length + 1,
+    text: payload.text,
+    time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+    isSent: true,
+    isRead: false,
+    messageStatus: 1,
+    sanderUniqueCode: currentUser.uniqueCode,
+    reciverUniqueCode: selected.reciverUniqueCode,
+    date: new Date().toISOString().split('T')[0],
+    tempId: `${new Date().toISOString()}_${currentUser.uniqueCode}_${selected.reciverUniqueCode}`,
+    replyTo: payload.replyTo || null,
+    replyToText: payload.replyToText || null,
+    replyToUserName: payload.replyToUserName || null
+  };
 
-    const currentUser = JSON.parse(storedUser);
+  // send the message to backend with reply data
+  this.socket.emit('message', { ...newMessage });
 
-    if (msg.sanderUniqueCode === currentUser.uniqueCode) {
-      console.log("⏩ Ignored self message from server (already in UI)");
-      return;
-    }
+  // show instantly in UI
+  this.messagesSignal.update(messages => [...messages, newMessage]);
+}
 
-    // const alreadyExists = this.messagesSignal().some(
-    //   m => m.tempId === msg.tempId || (msg.id && m.id === msg.id)
-    // );
-    // if (alreadyExists) {
-    //   console.log("⚠️ Skipped duplicate message:", msg.text);
-    //   return;
-    // }
 
-    const newMsg: Message = {
-      id: this.messagesSignal().length + 1,
-      text: msg.text,
-      time: msg.time || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
-      isSent: false,
-      isRead: false,
-      messageStatus: msg.messageStatus ?? 2,
-      sanderUniqueCode: msg.sanderUniqueCode,
-      reciverUniqueCode: msg.reciverUniqueCode,
-      date: msg.date || new Date().toISOString().split("T")[0],
-      tempId: msg.tempId
-    };
 
-    this.messagesSignal.update(messages => [...messages, newMsg]);
-    console.log("✅ messagesSignal updated:", this.messagesSignal());
-    
-    const selected = this.selectedContact();
-    if (selected && selected.sanderUniqueCode === msg.sanderUniqueCode) {
-      this.markMessagesAsRead(msg.sanderUniqueCode);
-    }
-  }
+  // private receiveMessage(msg: any) {
+  //   if (msg._doc) msg = msg._doc;
+
+  //   const storedUser = localStorage.getItem('user');
+  //   if (!storedUser) return;
+
+  //   const currentUser = JSON.parse(storedUser);
+
+  //   if (msg.sanderUniqueCode === currentUser.uniqueCode) {
+  //     console.log("⏩ Ignored self message from server (already in UI)");
+  //     return;
+  //   }
+
+  //   // const alreadyExists = this.messagesSignal().some(
+  //   //   m => m.tempId === msg.tempId || (msg.id && m.id === msg.id)
+  //   // );
+  //   // if (alreadyExists) {
+  //   //   console.log("⚠️ Skipped duplicate message:", msg.text);
+  //   //   return;
+  //   // }
+
+  //   const newMsg: Message = {
+  //     id: this.messagesSignal().length + 1,
+  //     text: msg.text,
+  //     time: msg.time || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+  //     isSent: false,
+  //     isRead: false,
+  //     messageStatus: msg.messageStatus ?? 2,
+  //     sanderUniqueCode: msg.sanderUniqueCode,
+  //     reciverUniqueCode: msg.reciverUniqueCode,
+  //     date: msg.date || new Date().toISOString().split("T")[0],
+  //     tempId: msg.tempId
+  //   };
+
+  //   this.messagesSignal.update(messages => [...messages, newMsg]);
+  //   console.log("✅ messagesSignal updated:", this.messagesSignal());
+
+  //   const selected = this.selectedContact();
+  //   if (selected && selected.sanderUniqueCode === msg.sanderUniqueCode) {
+  //     this.markMessagesAsRead(msg.sanderUniqueCode);
+  //   }
+  // }
+private receiveMessage(msg: any) {
+  if (msg._doc) msg = msg._doc;
+
+  const storedUser = localStorage.getItem('user');
+  if (!storedUser) return;
+  const currentUser = JSON.parse(storedUser);
+
+  if (msg.sanderUniqueCode === currentUser.uniqueCode) return;
+
+  const newMsg: Message = {
+    id: this.messagesSignal().length + 1,
+    text: msg.text,
+    time: msg.time || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+    isSent: false,
+    isRead: false,
+    messageStatus: msg.messageStatus ?? 2,
+    sanderUniqueCode: msg.sanderUniqueCode,
+    reciverUniqueCode: msg.reciverUniqueCode,
+    date: msg.date || new Date().toISOString().split("T")[0],
+    tempId: msg.tempId,
+    replyTo: msg.replyTo || null,
+    replyToText: msg.replyToText || null,
+    replyToUserName: msg.replyToUserName || null
+  };
+
+  this.messagesSignal.update(messages => [...messages, newMsg]);
+}
 
 
 
@@ -228,32 +312,39 @@ export class ChatService {
 
 
   async loadMessages(contact: Contact, selectedDate: string = new Date().toISOString().split("T")[0]) {
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) return;
+  const storedUser = localStorage.getItem('user');
+  if (!storedUser) return;
 
-    const currentUser = JSON.parse(storedUser);
+  const currentUser = JSON.parse(storedUser);
 
-    this.http.get(`${environment.apiUrl}/api/messages/date/${currentUser.uniqueCode}/${contact.sanderUniqueCode}/${selectedDate}`)
-      .subscribe((res: any) => {
+  this.http
+    .get(`${environment.apiUrl}/api/messages/date/${currentUser.uniqueCode}/${contact.sanderUniqueCode}/${selectedDate}`)
+    .subscribe((res: any) => {
+      if (res?.success && res.data?.messages) {
+        const formattedMsgs = res.data.messages.map((m: any, index: number) => ({
+          id: m._id || index + 1,
+          text: m.text,
+          time: m.time,
+          date: m.date,
+          isSent: m.sanderUniqueCode === currentUser.uniqueCode,
+          isRead: m.isRead,
+          messageStatus: m.messageStatus,
+          sanderUniqueCode: m.sanderUniqueCode,
+          reciverUniqueCode: m.reciverUniqueCode,
 
-        if (res?.success && res.data?.messages) {
+          replyTo: m.replyTo || null,
+          replyToText: m.replyTo?.text || m.replyToText || null,
+          replyToUserName:
+            m.replyTo?.sanderUniqueCode === currentUser.uniqueCode
+              ? 'You'
+              : contact.name || 'Unknown',
+        }));
 
-          const formattedMsgs = res.data.messages.map((m: any, index: number) => ({
-            id: index + 1,
-            text: m.text,
-            time: m.time,
-            date: m.date,
-            isSent: m.sanderUniqueCode === currentUser.uniqueCode,
-            isRead: m.isRead,
-            messageStatus: m.messageStatus,
-            sanderUniqueCode: m.sanderUniqueCode,
-            reciverUniqueCode: m.reciverUniqueCode
-          }));
+        this.messagesSignal.set(formattedMsgs);
+      }
+    });
+}
 
-          this.messagesSignal.set(formattedMsgs);
-        }
-      });
-  }
 
 }
 

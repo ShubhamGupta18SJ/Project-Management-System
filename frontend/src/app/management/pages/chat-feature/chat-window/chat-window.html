@@ -1,19 +1,6 @@
 <div class="chat-window">
   @if (selectedContact) {
-  <mat-toolbar color="primary" class="chat-header">
-    <button mat-icon-button>
-      <mat-icon>arrow_back</mat-icon>
-    </button>
-
-    <img matListItemAvatar class="avatar" [src]="selectedContact.avatar || 'assets/default-avatar.png'" alt="avatar" />
-    <span class="contact-name">{{ selectedContact.name }}</span>
-
-    <span class="spacer"></span>
-
-    <button mat-icon-button><mat-icon>videocam</mat-icon></button>
-    <button mat-icon-button><mat-icon>call</mat-icon></button>
-    <button mat-icon-button><mat-icon>more_vert</mat-icon></button>
-  </mat-toolbar>
+  <app-chat-window-header [contact]="selectedContact"></app-chat-window-header>
 
   <div class="chat-messages" #messageContainer>
     @for (group of groupedMessages; track group.date) {
@@ -29,10 +16,21 @@
     message.sanderUniqueCode === currentUser.uniqueCode
       ? 'message sent'
       : 'message received'
-  ">
+  " (dblclick)="startReply(message)">
 
       <mat-card class="message-bubble">
         <mat-card-content>
+          @if (message.replyTo) {
+          <div class="reply-preview-inside" (click)="scrollToMessage(message.replyTo?._id)">
+            <!-- <div class="reply-preview-inside" (click)="scrollToMessage(message.replyTo)"> -->
+            <mat-icon class="reply-icon">reply</mat-icon>
+            <div class="reply-text-inside">
+              <strong>{{ message.replyToUserName || 'You' }}</strong>
+              <div class="reply-snippet">{{ message.replyTo.text }}</div>
+            </div>
+          </div>
+          }
+
           {{ message.text }}
 
           <span class="message-time">
@@ -61,12 +59,25 @@
 
   <mat-toolbar class="chat-input">
     <button mat-icon-button><mat-icon>emoji_emotions</mat-icon></button>
+    <div class="">
+      @if (replyingTo) {
+      <div class="reply-preview">
+        <mat-icon>reply</mat-icon>
+        <div class="reply-text">
+          <strong>Replying to:</strong> {{ replyingTo.text }}
+        </div>
+        <button mat-icon-button (click)="cancelReply()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      }
 
-    <mat-form-field appearance="outline" style="height: 45px;">
-      <mat-label>Add a Message...</mat-label>
-      <textarea matInput placeholder="Message" [(ngModel)]="messageText" (keyup.enter)="sendMessage()"
-        rows="1.5"></textarea>
-    </mat-form-field>
+      <mat-form-field appearance="outline" style="height: 45px;">
+        <mat-label>Add a Message...</mat-label>
+        <textarea matInput placeholder="Message" [(ngModel)]="messageText" (keyup.enter)="sendMessage()"
+          rows="1.5"></textarea>
+      </mat-form-field>
+    </div>
     <!-- <textarea matInput placeholder="Message" [(ngModel)]="messageText" (keyup.enter)="sendMessage()"
       rows="2"></textarea> -->
 

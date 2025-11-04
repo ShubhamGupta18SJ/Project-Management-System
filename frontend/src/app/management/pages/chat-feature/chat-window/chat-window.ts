@@ -11,6 +11,7 @@ import { io, Socket } from "socket.io-client";
 import { ChatService, Contact, Message } from '../chat.service';
 import { ChatAuthService } from '../../chat-login-syatem/chat-auth.service';
 import { FileShare } from '../file-share/file-share';
+import { ChatWindowHeader } from './chat-window-header/chat-window-header';
 
 @Component({
   selector: 'app-chat-window',
@@ -24,7 +25,7 @@ import { FileShare } from '../file-share/file-share';
     MatFormFieldModule,
     MatCardModule,
     FileShare,
-
+    ChatWindowHeader
   ],
   templateUrl: './chat-window.html',
   styleUrls: ['./chat-window.scss']
@@ -54,24 +55,114 @@ export class ChatWindow implements OnInit {
       const selected = this.chatService.selectedContact();
       if (selected) {
         this.chatService.markMessagesAsRead(selected.sanderUniqueCode);
-        // this.scrollToBottom();
+        this.scrollToBottom();
         this.scrollToUnreadMessage();
-
       }
     });
     this.scrollToUnreadMessage();
   }
 
+  // replaye too start
+  replyingTo: Message | null = null;
 
-  sendMessage() {
-    const text = this.messageText().trim();
-    if (!text) return;
-    //  service handles socket + saving
-    this.chatService.sendMessage(text);
-    this.messageText.set('');
-
-    setTimeout(() => this.scrollToBottom(), 50);
+  startReply(message: Message) {
+    this.replyingTo = message;
   }
+
+  cancelReply() {
+    this.replyingTo = null;
+  }
+  // scrollToMessage(messageId: number) {
+  //   const element = document.querySelector(`[data-id="${messageId}"]`);
+  //   if (element) {
+  //     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  //     element.classList.add('highlight');
+  //     setTimeout(() => element.classList.remove('highlight'), 2000);
+  //   }
+  // }
+scrollToMessage(messageId: string | undefined) {
+  if (!messageId) return;
+
+  const element = document.getElementById(messageId);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    element.classList.add('highlight');
+    setTimeout(() => element.classList.remove('highlight'), 2000);
+  }
+}
+
+  // replaye too end
+
+//   sendMessage() {
+//   const text = this.messageText().trim();
+//   if (!text) return;
+
+//   const payload: any = { text };
+
+//   if (this.replyingTo) {
+//     payload.replyTo = this.replyingTo.tempId || this.replyingTo.id;
+//     payload.replyToText = this.replyingTo.text;
+//     payload.replyToUserName =
+//       this.replyingTo.sanderUniqueCode === this.currentUser.uniqueCode
+//         ? 'You'
+//         : this.selectedContact?.name;
+//   }
+
+//   console.log('📤 Sending payload:', payload);
+//   this.chatService.sendMessage(payload);
+//   this.messageText.set('');
+//   this.replyingTo = null;
+
+//   setTimeout(() => this.scrollToBottom(), 50);
+// }
+
+sendMessage() {
+  const text = this.messageText().trim();
+  if (!text) return;
+
+  const payload: any = { text };
+
+  if (this.replyingTo) {
+    payload.replyTo = {
+      _id: this.replyingTo.id,
+      text: this.replyingTo.text,
+      sanderUniqueCode: this.replyingTo.sanderUniqueCode,
+      reciverUniqueCode: this.replyingTo.reciverUniqueCode,
+      date: this.replyingTo.date,
+      time: this.replyingTo.time
+    };
+    payload.replyToText = this.replyingTo.text;
+    payload.replyToUserName =
+      this.replyingTo.sanderUniqueCode === this.currentUser.uniqueCode
+        ? 'You'
+        : this.selectedContact?.name;
+  }
+
+  console.log('📤 Sending payload:', payload);
+  this.chatService.sendMessage(payload);
+  this.messageText.set('');
+  this.replyingTo = null;
+  setTimeout(() => this.scrollToBottom(), 50);
+}
+
+
+  // sendMessage() {
+  //   const text = this.messageText().trim();
+  //   if (!text) return;
+
+  //   const payload: any = { text };
+
+  //   if (this.replyingTo) {
+  //     payload.replyTo = this.replyingTo.id;
+  //     payload.replyToText = this.replyingTo.text;
+  //     this.replyingTo = null; // reset
+  //   }
+  //   console.log(payload, "Chatwinfo");
+
+  //   this.chatService.sendMessage(payload);
+  //   this.messageText.set('');
+  //   setTimeout(() => this.scrollToBottom(), 50);
+  // }
 
 
   scrollToUnreadMessage() {
@@ -219,7 +310,6 @@ export class ChatWindow implements OnInit {
 
   // icon emoji shortcuts
   showEmojiPicker = false;
-  // messageText = '';
 
   toggleEmojiPicker() {
     this.showEmojiPicker = !this.showEmojiPicker;

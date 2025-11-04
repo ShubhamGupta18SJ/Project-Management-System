@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-notification',
@@ -14,9 +14,9 @@ import { Router, RouterLink, RouterOutlet } from '@angular/router';
     </button>
     <mat-menu #menu="matMenu">
       <mat-nav-list>
-      <mat-list-item>
+      <mat-list-item (click)='openTab()'>
             <mat-icon class="m-x-16" matListItemIcon  matBadge="5">chat</mat-icon>
-            <a matListItemTitle (click)='openTab()'>Chat</a>
+            <a matListItemTitle >Chat</a>
           </mat-list-item>
         @for (message of messages; track message) {
           <mat-list-item>

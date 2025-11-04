@@ -45,6 +45,10 @@ router.get("/users/list", getUsersForChat);
  *               time:
  *                 type: string
  *                 example: "13:45:10"
+ *               replyToId:
+ *                 type: string
+ *               replyToText:
+ *                 type: string
  *               date:
  *                 type: string
  *                 example: "2025-10-27"

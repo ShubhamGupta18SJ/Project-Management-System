@@ -14,7 +14,7 @@ const server = http.createServer(app);
 
 const io = new SocketIOServer(server, {
   cors: {
-    origin: "http://localhost:4200", //  safer than "*"
+    origin: "http://localhost:4200", 
     methods: ["GET", "POST"],
   },
 });
@@ -55,7 +55,7 @@ io.on("connection", (socket) => {
         // Send message to receiver (delivered)
         io.to(receiverSocketId).emit("message", {
           ...saved,
-          messageStatus: 2, // delivered
+          messageStatus: 2,
         });
 
         // Tell sender message was delivered

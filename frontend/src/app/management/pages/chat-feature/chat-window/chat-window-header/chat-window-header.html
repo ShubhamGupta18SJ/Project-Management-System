@@ -1,0 +1,20 @@
+<mat-toolbar color="primary" class="chat-header">
+  <button mat-icon-button>
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+
+  <img
+    matListItemAvatar
+    class="avatar"
+    [src]="contact?.avatar || 'assets/default-avatar.png'"
+    alt="avatar"
+  />
+
+  <span class="contact-name">{{ contact?.name }}</span>
+
+  <span class="spacer"></span>
+
+  <button mat-icon-button><mat-icon>videocam</mat-icon></button>
+  <button mat-icon-button><mat-icon>call</mat-icon></button>
+  <button mat-icon-button><mat-icon>more_vert</mat-icon></button>
+</mat-toolbar>
