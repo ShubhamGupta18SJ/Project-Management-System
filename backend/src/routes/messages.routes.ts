@@ -1,5 +1,4 @@
 
-// src/routes/messages.routes.ts
 import express from "express";
 import { addMessage, getChatBySender, getChatByDate, getAllChats, getUsersForChat } from "../controllers/messages.controller";
 

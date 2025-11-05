@@ -72,97 +72,70 @@ export class ChatWindow implements OnInit {
   cancelReply() {
     this.replyingTo = null;
   }
-  // scrollToMessage(messageId: number) {
-  //   const element = document.querySelector(`[data-id="${messageId}"]`);
-  //   if (element) {
-  //     element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  //     element.classList.add('highlight');
-  //     setTimeout(() => element.classList.remove('highlight'), 2000);
-  //   }
-  // }
-scrollToMessage(messageId: string | undefined) {
-  if (!messageId) return;
-
-  const element = document.getElementById(messageId);
-  if (element) {
-    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    element.classList.add('highlight');
-    setTimeout(() => element.classList.remove('highlight'), 2000);
+  
+  scrollToMessage(messageId: any) {
+    const element = document.querySelector(`[data-id="${messageId}"]`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.classList.add('highlight');
+      setTimeout(() => element.classList.remove('highlight'), 2000);
+    }
   }
-}
+
 
   // replaye too end
 
-//   sendMessage() {
-//   const text = this.messageText().trim();
-//   if (!text) return;
-
-//   const payload: any = { text };
-
-//   if (this.replyingTo) {
-//     payload.replyTo = this.replyingTo.tempId || this.replyingTo.id;
-//     payload.replyToText = this.replyingTo.text;
-//     payload.replyToUserName =
-//       this.replyingTo.sanderUniqueCode === this.currentUser.uniqueCode
-//         ? 'You'
-//         : this.selectedContact?.name;
-//   }
-
-//   console.log('📤 Sending payload:', payload);
-//   this.chatService.sendMessage(payload);
-//   this.messageText.set('');
-//   this.replyingTo = null;
-
-//   setTimeout(() => this.scrollToBottom(), 50);
-// }
-
-sendMessage() {
-  const text = this.messageText().trim();
-  if (!text) return;
-
-  const payload: any = { text };
-
-  if (this.replyingTo) {
-    payload.replyTo = {
-      _id: this.replyingTo.id,
-      text: this.replyingTo.text,
-      sanderUniqueCode: this.replyingTo.sanderUniqueCode,
-      reciverUniqueCode: this.replyingTo.reciverUniqueCode,
-      date: this.replyingTo.date,
-      time: this.replyingTo.time
-    };
-    payload.replyToText = this.replyingTo.text;
-    payload.replyToUserName =
-      this.replyingTo.sanderUniqueCode === this.currentUser.uniqueCode
-        ? 'You'
-        : this.selectedContact?.name;
-  }
-
-  console.log('📤 Sending payload:', payload);
-  this.chatService.sendMessage(payload);
-  this.messageText.set('');
-  this.replyingTo = null;
-  setTimeout(() => this.scrollToBottom(), 50);
-}
-
-
-  // sendMessage() {
+  //   sendMessage() {
   //   const text = this.messageText().trim();
   //   if (!text) return;
 
   //   const payload: any = { text };
 
   //   if (this.replyingTo) {
-  //     payload.replyTo = this.replyingTo.id;
+  //     payload.replyTo = this.replyingTo.tempId || this.replyingTo.id;
   //     payload.replyToText = this.replyingTo.text;
-  //     this.replyingTo = null; // reset
+  //     payload.replyToUserName =
+  //       this.replyingTo.sanderUniqueCode === this.currentUser.uniqueCode
+  //         ? 'You'
+  //         : this.selectedContact?.name;
   //   }
-  //   console.log(payload, "Chatwinfo");
 
+  //   console.log('📤 Sending payload:', payload);
   //   this.chatService.sendMessage(payload);
   //   this.messageText.set('');
+  //   this.replyingTo = null;
+
   //   setTimeout(() => this.scrollToBottom(), 50);
   // }
+
+  sendMessage() {
+    const text = this.messageText().trim();
+    if (!text) return;
+
+    const payload: any = { text };
+
+    if (this.replyingTo) {
+      payload.replyTo = {
+        _id: this.replyingTo.id,
+        text: this.replyingTo.text,
+        sanderUniqueCode: this.replyingTo.sanderUniqueCode,
+        reciverUniqueCode: this.replyingTo.reciverUniqueCode,
+        date: this.replyingTo.date,
+        time: this.replyingTo.time
+      };
+      payload.replyToText = this.replyingTo.text;
+      payload.replyToUserName =
+        this.replyingTo.sanderUniqueCode === this.currentUser.uniqueCode
+          ? 'You'
+          : this.selectedContact?.name;
+    }
+
+    console.log('📤 Sending payload:', payload);
+    this.chatService.sendMessage(payload);
+    this.messageText.set('');
+    this.replyingTo = null;
+    setTimeout(() => this.scrollToBottom(), 50);
+  }
 
 
   scrollToUnreadMessage() {

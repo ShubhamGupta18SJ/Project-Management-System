@@ -12,8 +12,6 @@ export interface IMessage {
   reciverUniqueCode: string;
   tempId?: string;
   createdAt?: Date;
-
-  // ✅ reply support
   replyTo?: {
     _id?: Types.ObjectId | null;
     text?: string | null;
@@ -23,6 +21,12 @@ export interface IMessage {
     time?: string | null;
   };
   replyToText?: string | null;
+  files?: {
+    url: string;
+    type: string; // image / video / document / audio etc
+    originalName: string;
+  }[];
+  caption?: string;
 }
 
 export interface IChat extends Document {
@@ -46,8 +50,6 @@ const MessageSchema = new Schema<IMessage>({
   sanderUniqueCode: { type: String, required: true },
   reciverUniqueCode: { type: String, required: true },
   tempId: { type: String, required: false },
-
-  //  reply data
   replyTo: {
     _id: { type: String, required: false },
     text: { type: String, default: null },
@@ -57,7 +59,14 @@ const MessageSchema = new Schema<IMessage>({
     time: { type: String, default: null },
   },
   replyToText: { type: String, default: null },
-
+  files: [
+    {
+      url: String,
+      type: String,
+      originalName: String,
+    },
+  ],
+  caption: String,
   createdAt: { type: Date, default: Date.now },
 });
 

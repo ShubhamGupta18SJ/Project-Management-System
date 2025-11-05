@@ -14,7 +14,7 @@ const server = http.createServer(app);
 
 const io = new SocketIOServer(server, {
   cors: {
-    origin: "http://localhost:4200", 
+    origin: "http://localhost:4200",
     methods: ["GET", "POST"],
   },
 });
@@ -50,8 +50,7 @@ io.on("connection", (socket) => {
       const receiverSocketId = onlineUsers.get(msg.reciverUniqueCode);
 
       if (receiverSocketId) {
-        console.log(`📨 Sending message to receiver ${msg.reciverUniqueCode}`);
-
+        console.log(`${msg.sanderUniqueCode} 📨 Sending message to receiver ${msg.reciverUniqueCode}`);
         // Send message to receiver (delivered)
         io.to(receiverSocketId).emit("message", {
           ...saved,

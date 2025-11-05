@@ -274,6 +274,13 @@ private receiveMessage(msg: any) {
   };
 
   this.messagesSignal.update(messages => [...messages, newMsg]);
+  // this.messagesSignal.update(messages => [...messages, newMsg]);
+  //   console.log("✅ messagesSignal updated:", this.messagesSignal());
+
+    const selected = this.selectedContact();
+    if (selected && selected.sanderUniqueCode === msg.sanderUniqueCode) {
+      this.markMessagesAsRead(msg.sanderUniqueCode);
+    }
 }
 
 

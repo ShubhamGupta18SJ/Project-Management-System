@@ -150,15 +150,6 @@ export const getChatByDate = async (req: Request, res: Response) => {
     // find the chat of the requested date
     let chatDate = chat.chats.find((c: any) => c.date === date);
 
-    // if not found, get the latest available date
-    // if (!chatDate && chat.chats.length > 0) {
-    //   // sort chats by date descending (latest first)
-    //   const sortedChats = [...chat.chats].sort(
-    //     (a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    //   );
-    //   chatDate = sortedChats[0];
-    // }
-
     if (!chatDate && chat.chats.length > 0) {
       const sortedChats = [...chat.chats].sort(
         (a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()
@@ -256,53 +247,3 @@ export const getUsersForChat = async (req: Request, res: Response) => {
     });
   }
 };
-
-// export const getUsersForChat = async (req: Request, res: Response) => {
-//   try {
-//     const users = await User.find();
-
-//     const chatUsers = await Promise.all(users.map(async (u) => {
-//       const chats = await Chat.find({ participants: u.uniqueCode });
-
-//       // last message time
-//       let lastMsgTime = null;
-//       let lastMsgSeen = null;
-//       let unreadCount = 0;
-
-//       for (const chat of chats) {
-//         for (const day of chat.chats) {
-//           const lastMsg = day.messages[day.messages.length - 1];
-//           if (!lastMsgTime || new Date(lastMsg.time) > new Date(lastMsgTime)) {
-//             lastMsgTime = lastMsg.time;
-//           }
-//           lastMsgSeen=lastMsg
-//           unreadCount += day.messages.filter(
-//             m => m.reciverUniqueCode === u.uniqueCode && !m.isRead
-//           ).length;
-//         }
-//       }
-
-//       return {
-//         username: u.username,
-//         email: u.email,
-//         uniqueCode: u.uniqueCode,
-//         avatar: `https://cdn-icons-png.flaticon.com/512/4333/433360${Math.floor(Math.random() * 6)}.png`,
-//         lastSeen: lastMsgSeen,
-//         lastMsgTime: lastMsgTime,
-//         unread: unreadCount
-//       };
-//     }));
-
-//     res.status(200).json({
-//       status: true,
-//       message: "Chat users fetched successfully",
-//       data: chatUsers
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({
-//       status: false,
-//       message: "Failed to fetch chat users"
-//     });
-//   }
-// };

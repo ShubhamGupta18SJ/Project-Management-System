@@ -163,7 +163,7 @@ mat-card-content {
 
 .status-icon.pending { color: #999; }
 .status-icon.sent { color: #999; }
-.status-icon.seen { color: #4CAF50; } /* or blue: #2196F3 */
+.status-icon.seen { color: #4CAF50; } 
 
 
 /* 🗓️ Date divider styling */
@@ -188,7 +188,7 @@ mat-card-content {
 }
 
 .message.highlight {
-  background-color: #fff9c4; /* light yellow */
+  background-color: #fff9c4c2;
   transition: background-color 0.5s ease;
 }
 
