@@ -1,1 +1,37 @@
-<p>file-share-ui-chat-window works!</p>
+<div class="file-message-bubble" [ngClass]="{ sent: isSent, received: !isSent }">
+  <div class="file-message-content">
+    @if (isImage()) {
+      <img [src]="message.fileUrl" alt="shared image" class="shared-img" (click)="openImage(message.fileUrl)" />
+    }
+    @else {
+      <div class="file-box">
+        <mat-icon class="file-icon">insert_drive_file</mat-icon>
+        <div class="file-info">
+          <div class="file-name">{{ message.fileName }}</div>
+          <button mat-icon-button color="primary" (click)="downloadFile()">
+            <mat-icon>download</mat-icon>
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (message.caption) {
+      <div class="caption-text">{{ message.caption }}</div>
+    }
+
+    <div class="file-time">
+      {{ message.time }}
+      @if (isSent) {
+        @if (message.messageStatus == 1) {
+          <mat-icon class="uncheckmark">done</mat-icon>
+        } @else if (message.messageStatus == 2) {
+          <mat-icon class="uncheckmark">done_all</mat-icon>
+        } @else if (message.messageStatus == 3) {
+          <mat-icon class="checkmark">done_all</mat-icon>
+        } @else {
+          <mat-icon class="uncheckmark">history</mat-icon>
+        }
+      }
+    </div>
+  </div>
+</div>

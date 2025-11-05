@@ -83,31 +83,6 @@ export class ChatWindow implements OnInit {
   }
 
 
-  // replaye too end
-
-  //   sendMessage() {
-  //   const text = this.messageText().trim();
-  //   if (!text) return;
-
-  //   const payload: any = { text };
-
-  //   if (this.replyingTo) {
-  //     payload.replyTo = this.replyingTo.tempId || this.replyingTo.id;
-  //     payload.replyToText = this.replyingTo.text;
-  //     payload.replyToUserName =
-  //       this.replyingTo.sanderUniqueCode === this.currentUser.uniqueCode
-  //         ? 'You'
-  //         : this.selectedContact?.name;
-  //   }
-
-  //   console.log('📤 Sending payload:', payload);
-  //   this.chatService.sendMessage(payload);
-  //   this.messageText.set('');
-  //   this.replyingTo = null;
-
-  //   setTimeout(() => this.scrollToBottom(), 50);
-  // }
-
   sendMessage() {
     const text = this.messageText().trim();
     if (!text) return;

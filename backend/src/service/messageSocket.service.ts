@@ -64,8 +64,25 @@ export const addMessageSocket = async (msg: any) => {
 
     let chat = await Chat.findOne({ chatId });
 
+    // const messageToStore = {
+    //   text: msg.text,
+    //   time: msg.time || new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    //   date,
+    //   isSent: true,
+    //   isRead: false,
+    //   messageStatus: msg.messageStatus ?? 1,
+    //   sanderUniqueCode: msg.sanderUniqueCode,
+    //   reciverUniqueCode: msg.reciverUniqueCode,
+    //   tempId: msg.tempId || null,
+    //   replyTo: msg.replyTo || null,
+    //   replyToText: msg.replyTo?.text || null,
+
+    //   createdAt: new Date(),
+    // };
     const messageToStore = {
       text: msg.text,
+      caption: msg.caption || "",
+      files: msg.files || [],
       time: msg.time || new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       date,
       isSent: true,
@@ -74,13 +91,11 @@ export const addMessageSocket = async (msg: any) => {
       sanderUniqueCode: msg.sanderUniqueCode,
       reciverUniqueCode: msg.reciverUniqueCode,
       tempId: msg.tempId || null,
-
-      // ✅ full reply object
       replyTo: msg.replyTo || null,
       replyToText: msg.replyTo?.text || null,
-
       createdAt: new Date(),
     };
+
 
     if (!chat) {
       chat = new Chat({

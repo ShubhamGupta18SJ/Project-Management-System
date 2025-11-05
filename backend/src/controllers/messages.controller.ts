@@ -8,70 +8,66 @@ import { User } from "../models/user.model";
  * body: { sanderUniqueCode, reciverUniqueCode, text, time, date, tempId(optional) }
  * This API saves message and emits socket event (if io available on app)
  */
-// export const addMessage = async (req: Request, res: Response) => {
-//   try {
-//     const {
-//       sanderUniqueCode,
-//       reciverUniqueCode,
-//       text,
-//       time,
-//       date,
-//       tempId,
-//     } = req.body;
+export const addMessageWithFiles = async (req: Request, res: Response) => {
+  try {
+    const { sanderUniqueCode, reciverUniqueCode, text, caption, replyTo, tempId } = req.body;
+    const files = (req.files as Express.Multer.File[]) || [];
 
-//     // Build message object
-//     const msg = {
-//       text,
-//       time: time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-//       date: date || new Date().toISOString().split("T")[0],
-//       sanderUniqueCode,
-//       reciverUniqueCode,
-//       tempId: tempId || null,
-//       messageStatus: 1,
-//       isSent: true,
-//       isRead: false,
-//     };
+    const fileData = files.map((f) => ({
+      url: f.path.replace(/\\/g, "/"),
+      type: f.mimetype,
+      originalName: f.originalname,
+    }));
 
-//     // Use the same save helper as socket service to keep behaviour consistent
-//     // const { addMessageSocket } = await import("../service/messageSocket.service.js");
-//     const savedMsg = await addMessageSocket(msg);
+    const msg = {
+      text: text || "",
+      caption: caption || "",
+      files: fileData,
+      sanderUniqueCode,
+      reciverUniqueCode,
+      tempId: tempId || null,
+      messageStatus: 1,
+      isSent: true,
+      isRead: false,
+      replyTo: replyTo ? JSON.parse(replyTo) : null,
+      replyToText: replyTo ? JSON.parse(replyTo).text : null,
+      date: new Date().toISOString().split("T")[0],
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    };
 
-//     // Emit to receiver if socket available
-//     const io = req.app.get("io");
-//     const onlineUsers: Map<string, string> = req.app.get("onlineUsers");
+    const savedMsg = await addMessageSocket(msg);
 
-//     if (io && onlineUsers) {
-//       const receiverSocketId = onlineUsers.get(reciverUniqueCode);
-//       const senderSocketId = onlineUsers.get(sanderUniqueCode);
+    const io = req.app.get("io");
+    const onlineUsers: Map<string, string> = req.app.get("onlineUsers");
 
-//       if (receiverSocketId) {
-//         io.to(receiverSocketId).emit("message", { ...savedMsg, messageStatus: 2 });
-//         // notify sender about delivered
-//         if (senderSocketId) {
-//           io.to(senderSocketId).emit("messageStatus", {
-//             tempId,
-//             messageId: savedMsg._id,
-//             messageStatus: 2,
-//           });
-//         }
-//       } else {
-//         // receiver offline -> notify sender of sent (1)
-//         if (senderSocketId) {
-//           io.to(senderSocketId).emit("messageStatus", {
-//             tempId,
-//             messageId: savedMsg._id,
-//             messageStatus: 1,
-//           });
-//         }
-//       }
-//     }
+    if (io && onlineUsers) {
+      const receiverSocketId = onlineUsers.get(reciverUniqueCode);
+      const senderSocketId = onlineUsers.get(sanderUniqueCode);
 
-//     return res.json({ success: true, message: "Message saved", data: savedMsg });
-//   } catch (err) {
-//     console.error(err);
-//     return res.status(500).json({ success: false, message: "Server Error", err });
-//   }
-// };
+      if (receiverSocketId) {
+        io.to(receiverSocketId).emit("message", { ...savedMsg, messageStatus: 2 });
+        if (senderSocketId) {
+          io.to(senderSocketId).emit("messageStatus", {
+            tempId,
+            messageId: savedMsg._id,
+            messageStatus: 2,
+          });
+        }
+      } else if (senderSocketId) {
+        io.to(senderSocketId).emit("messageStatus", {
+          tempId,
+          messageId: savedMsg._id,
+          messageStatus: 1,
+        });
+      }
+    }
+
+    return res.json({ success: true, message: "Message with file saved", data: savedMsg });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "File message save failed", err });
+  }
+};
 
 export const addMessage = async (req: Request, res: Response) => {
   try {

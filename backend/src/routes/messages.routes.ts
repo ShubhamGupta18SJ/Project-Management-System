@@ -1,6 +1,7 @@
 
 import express from "express";
-import { addMessage, getChatBySender, getChatByDate, getAllChats, getUsersForChat } from "../controllers/messages.controller";
+import { addMessage, getChatBySender, getChatByDate, getAllChats, getUsersForChat, addMessageWithFiles } from "../controllers/messages.controller";
+import { upload } from "../middleware/upload";
 
 const router = express.Router();
 
@@ -9,6 +10,7 @@ router.get("/conversation/:sanderUniqueCode/:reciverUniqueCode", getAllChats);
 router.get("/date/:sender/:receiver/:date", getChatByDate);
 router.get("/sender/:sanderUniqueCode", getChatBySender);
 router.get("/users/list", getUsersForChat);
+router.post("/add-with-files", upload.array("files"), addMessageWithFiles);
 // export default router;
 
 /**
@@ -17,6 +19,40 @@ router.get("/users/list", getUsersForChat);
  *   name: Messages
  *   description: Chat Messages API
  */
+
+/**
+ * @swagger
+ * /api/messages/add-with-files:
+ *   post:
+ *     summary: Send message with file(s)
+ *     tags: [Messages]
+ *     consumes:
+ *       - multipart/form-data
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               sanderUniqueCode:
+ *                 type: string
+ *               reciverUniqueCode:
+ *                 type: string
+ *               text:
+ *                 type: string
+ *               caption:
+ *                 type: string
+ *               files:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *     responses:
+ *       200:
+ *         description: Message with files saved successfully
+ */
+
 
 /**
  * @swagger
